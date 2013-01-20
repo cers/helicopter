@@ -5,9 +5,12 @@ var setInterval_ = function (vCallback, nDelay /*, argumentToPass1, argumentToPa
   } : vCallback, nDelay);
 };
 
-function Helicopter(e, h, w) {
+function Helicopter(e, settings) {
+  if (!settings)
+    settings = {};
   this.canvas = e;
-  this.resize(h, w);
+  this.resize(settings.height, settings.width);
+  this.settings.sound = !!settings.sound;
   this.ctx.font = "18px sans-serif";
 
   for (var i=12, idx=0; i<31; i++) {
@@ -17,14 +20,30 @@ function Helicopter(e, h, w) {
     img.width = 52;
     this.helicopter[idx++] = img;
   }
+
+  this.audio = new Audio();
+  this.audio.src="data/helicopter.ogg";
+  this.audio.loop = true;
+  this.audio.controls = false;
+
+  this.rev = new Audio();
+  this.rev.src="data/rev.ogg";
+  this.rev.loop = true;
+  this.rev.controls = false;
+
+  this.highscore = localStorage.getItem("highscore");
+
   var self = this;
   e.addEventListener("mousedown", function H_mouseDown() {
     if (!self.runId)
       self.startGame();
     self.mouseDown = true;
+    if (self.settings.sound && self.rev.paused && self.runId)
+      self.rev.play();
   }, false);
   e.addEventListener("mouseup", function H_mouseUp() {
     self.mouseDown = false;
+    self.rev.pause();
   }, false);
 
   this.drawCourse();
@@ -44,6 +63,12 @@ Helicopter.prototype = {
   helicopter: [],
   canvas: null,
   ctx: null,
+  settings: {
+    sound: false
+  },
+  audio: null,
+  rev: null,
+  highscore: 0,
   course: function H_course(x) {
     var x = x + this.offset;
     var tmp = Math.sin(x/this.width)*this.height/4;
@@ -60,11 +85,20 @@ Helicopter.prototype = {
   },
   startGame: function H_startGame() {
     this.init();
+    if (this.settings.sound)
+      this.audio.play();
     this.runId = setInterval_.call(this, this.draw, 1000/60);
   },
   stopGame: function H_stopGame() {
     clearInterval(this.runId);
+    this.audio.pause();
+    this.rev.pause();
     this.runId = 0;
+    if (this.highscore < this.offset/10) {
+      this.highscore = this.offset/10;
+      localStorage.setItem("highscore", this.offset/10);
+    }
+    //this.drawScore();
   },
   drawCourse: function H_drawCourse() {
     var blocksize = 1;
@@ -74,6 +108,13 @@ Helicopter.prototype = {
       this.ctx.fillRect(this.offset+x, 0, blocksize, points[0]);
       this.ctx.fillRect(this.offset+x, points[1], blocksize, this.height-points[1]);
     }
+  },
+  drawScore: function H_drawScore() {
+    this.ctx.fillStyle = "white";
+    this.ctx.textAlign = "left";
+    this.ctx.fillText("Distance: "+this.offset/10, 10+this.offset, 20);
+    this.ctx.textAlign = "right";
+    this.ctx.fillText("Highscore: "+this.highscore, this.offset+this.width-10, 20);
   },
   draw: function H_draw() {
     this.ctx.save();
@@ -88,8 +129,7 @@ Helicopter.prototype = {
                        this.playerY, 52,25);
 
     // draw score
-    this.ctx.fillStyle = "white";
-    this.ctx.fillText("Distance: "+this.offset/10, 10+this.offset, 20)
+    this.drawScore();
 
     this.ctx.restore();
     this.offset += this.step;
@@ -119,5 +159,5 @@ Helicopter.prototype = {
   }
 }
 window.addEventListener("load", function D_onload() {
-  new Helicopter(document.getElementById("game"));
+  new Helicopter(document.getElementById("game"), {sound: false});
 }, false);
