@@ -1,0 +1,13 @@
+{
+    "name":"Helicopter",
+    "version": 0.1,
+    "developer": {
+        "name":"Christian Sonne",
+        "url":"http://geeksbynature.dk"
+    },
+    "launch_path": "/index.html",
+    "description":"Helicopter game",
+    "icons":{
+        "128":"/icon.png"
+    }
+}
