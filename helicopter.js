@@ -21,6 +21,14 @@ function Helicopter(e, settings) {
     this.helicopter[idx++] = img;
   }
 
+  for (var i=0; i<8; i++) {
+    var img = new Image();
+    img.src = "data/small-smoke-0"+(i+1)+".png";
+    img.height = 15;
+    img.width = 15;
+    this.smoke[i] = img;
+  }
+
   this.audio = new Audio();
   this.audio.src="data/helicopter.ogg";
   this.audio.loop = true;
@@ -28,10 +36,10 @@ function Helicopter(e, settings) {
 
   this.rev = new Audio();
   this.rev.src="data/rev.ogg";
-  this.rev.loop = true;
+  this.rev.loop = false;
   this.rev.controls = false;
 
-  this.highscore = localStorage.getItem("highscore");
+  this.highscore = localStorage.getItem("highscore") || 0;
 
   var self = this;
   e.addEventListener("mousedown", function H_mouseDown() {
@@ -69,6 +77,7 @@ Helicopter.prototype = {
   audio: null,
   rev: null,
   highscore: 0,
+  posCache: Array(5),
   course: function H_course(x) {
     var x = x + this.offset;
     var tmp = Math.sin(x/this.width)*this.height/4;
@@ -83,6 +92,7 @@ Helicopter.prototype = {
     this.mouseDown = false;
     this.mouseDownCnt = 0;
   },
+  smoke: [],
   startGame: function H_startGame() {
     this.init();
     if (this.settings.sound)
@@ -131,6 +141,14 @@ Helicopter.prototype = {
     // draw score
     this.drawScore();
 
+    // only update posCache periodically
+    if (this.offset%Math.floor(this.step*2) == 0) {
+      this.posCache.pop();
+      this.posCache.unshift([this.playerX+this.offset, this.playerY]);
+    }
+
+    this.drawSmoke();
+
     this.ctx.restore();
     this.offset += this.step;
 
@@ -148,6 +166,14 @@ Helicopter.prototype = {
       // COLISSION!
       this.stopGame();
       //this.dieSplash(ctx, offset/10);
+    }
+  },
+  drawSmoke: function H_drawSmoke() {
+    var posLength = this.posCache.length;
+    for (var i=0; i<posLength; i++) {
+      if (typeof this.posCache[i] == 'object') {
+        this.ctx.drawImage(this.smoke[i], this.posCache[i][0], this.posCache[i][1]+5, this.smoke[i].width, this.smoke[i].height);
+      }
     }
   },
   resize: function H_resize(h, w) {
