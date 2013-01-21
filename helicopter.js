@@ -92,7 +92,7 @@ Helicopter.prototype = {
   audio: null,
   rev: null,
   highscore: 0,
-  posCache: Array(5),
+  posCache: Array(8),
   course: function H_course(x) {
     var x = x + this.offset;
     var tmp = Math.sin(x/this.width)*this.height/4;
@@ -140,7 +140,7 @@ Helicopter.prototype = {
     var blocksize = 1;
     this.ctx.translate(-this.step, 0);
     this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
-    this.ctx.translate(0, 0);
+    this.ctx.translate(this.step, 0);
     this.ctx.fillStyle = "white";
     this.ctx.fillRect(this.width-this.step, 0, this.step, this.height);
     this.ctx.fillStyle = 'black ';
@@ -231,5 +231,5 @@ Helicopter.prototype = {
   }
 }
 window.addEventListener("load", function D_onload() {
-  new Helicopter(document.getElementById("game"), {sound: false, fps: false});
+  new Helicopter(document.getElementById("game"), {sound: false, fps: false, width: 480, height: 320 });
 }, false);
