@@ -213,10 +213,11 @@ Helicopter.prototype = {
     }
   },
   drawSmoke: function H_drawSmoke() {
+    var rand = Math.floor(Math.random()*10);
     var posLength = this.posCache.length;
     for (var i=0; i<posLength; i++) {
       if (typeof this.posCache[i] == 'number') {
-        this.ctx.drawImage(this.smoke[i], this.playerX-(i*this.step*2), this.posCache[i]+5, this.smoke[i].width, this.smoke[i].height);
+        this.ctx.drawImage(this.smoke[i], this.playerX-(i*this.step*2)-rand, this.posCache[i]+5, this.smoke[i].width, this.smoke[i].height);
       }
     }
   },
