@@ -8,11 +8,81 @@
         margin: 0;
         padding: 0;
       }
+      /* Install prompt */
+      #prompt {
+        margin: 0;
+        padding: 0;
+        height: 320px;
+        width: 480px;
+        background: rgba(0, 0, 0, 0.5);
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: none;
+      }
+      ul {
+        list-style: none;
+        margin: 100px 0 0 0;
+        padding: 0;
+      }
+      li {
+        display: block;
+        float: left;
+        margin-left: 60px;
+        background: white;
+        width: 148px;
+        height: 100px;
+        border: 1px black solid;
+        text-align: center;
+        line-height: 100px;
+        font-family: "verdana";
+        font-size: 2em;
+        cursor: pointer;
+        font-variant: small-caps;
+      }
+      li:hover {
+        text-decoration: underline;
+      }
     </style>
     <script src="requestAnimationFrameShim.js"></script>
     <script src="helicopter.js"></script>
+    <script>
+      // Install prompt
+      const INSTALL_URL = "http://users.skumleren.net/cers/helicopter/manifest.webapp";
+      window.addEventListener("load", function W_onload() {
+        if (navigator.mozApps) {
+          var request = navigator.mozApps.getSelf();
+          request.onsuccess = function mR_onsuccess() {
+            if (!request.result) {
+              var p = document.getElementById("prompt");
+              p.style.display = "block";
+              if ('ontouchstart' in window) {
+                var stopEvent  = "touchend";
+              } else {
+                var stopEvent  = "mouseup";
+              }
+              document.getElementById("install").addEventListener(stopEvent, function Install_onclick() {
+                var installRequest = navigator.mozApps.install(INSTALL_URL);
+                installRequest.onsuccess = function iR_onsuccess() {
+                  p.style.display = "none";
+                };
+              }, false);
+              document.getElementById("play").addEventListener(stopEvent, function Play_onclick() {
+                p.style.display = "none";
+              }, false);
+            }
+          };
+        }
+      }, false);
+    </script>
   </head>
   <body>
-    <canvas id="game" width="320" height="480"></canvas>
+    <canvas id="game" width="480" height="320"></canvas>
+    <div id="prompt">
+      <ul>
+        <li id="install">Install</li>
+        <li id="play">Play</li>
+      </ul>
+    </div>
   </body>
 </html>
