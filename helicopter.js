@@ -108,7 +108,7 @@ Helicopter.prototype = {
     this.mouseDownCnt = 0;
     this.initBackground();
     this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
-    
+    this.drawPlayer();
     this.ctx.fillStyle = "white";
     this.ctx.textAlign = "center";
     this.ctx.fillText("Click to start", this.width/2, this.height-20);
