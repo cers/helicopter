@@ -37,7 +37,7 @@ function Helicopter(e, settings) {
 
   this.highscore = localStorage.getItem("highscore") || 0;
 
-  if (!!('ontouchstart' in window)) {
+  if ('ontouchstart' in window) {
       var startEvent = "touchstart";
       var stopEvent  = "touchend";
   } else {
