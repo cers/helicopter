@@ -110,7 +110,7 @@ Helicopter.prototype = {
     this.initBackground();
   },
   difficulty: function H_difficulty() {
-    return Math.max(100, 4*this.height/5-this.offset/100);
+    return Math.max(100, 4*this.height/5-this.offset/200-65);
   },
   initBackground: function H_initBackground() {
     this.mapData = [];
@@ -119,7 +119,6 @@ Helicopter.prototype = {
     this.bgctx.fillRect(0, 0, this.width, this.height);
     this.bgctx.fillStyle = 'black';
     for (var x=0; x<this.width; x+=blocksize) {
-      //var points = this.course(x);
       this.mapData[x] = [this.height/5, 4*this.height/5];
       this.bgctx.fillRect(x, 0, blocksize, this.height/5);
       this.bgctx.fillRect(x, 4*this.height/5, blocksize, this.height/5);
@@ -142,40 +141,34 @@ Helicopter.prototype = {
       localStorage.setItem("highscore", this.offset/10);
     }
   },
-  genMapFragment: function H_genMapFragment() {
-    this.mapData.splice(0,8);
-    var tmp = [this.mapData[this.width-9][0],,,,,,,,
-               //Math.floor(Math.random()*(this.height-this.difficulty()))
-               Math.floor(Math.max(40, Math.min(this.height-this.difficulty()+40,
-                                               this.mapData[this.width-9][0]
-                                              +6*Math.random()-3)))
-              ];
-    tmp[4] = Math.floor(((tmp[0]+tmp[8])/2)+(Math.random()*2-1));
-    tmp[2] = Math.floor(((tmp[0]+tmp[4])/2)+(Math.random()*2-1));
-    tmp[6] = Math.floor(((tmp[4]+tmp[8])/2)+(Math.random()*2-1));
-    tmp[1] = Math.floor(((tmp[0]+tmp[2])/2)+(Math.random()*2-1));
-    tmp[3] = Math.floor(((tmp[2]+tmp[4])/2)+(Math.random()*2-1));
-    tmp[5] = Math.floor(((tmp[4]+tmp[6])/2)+(Math.random()*2-1));
-    tmp[7] = Math.floor(((tmp[6]+tmp[8])/2)+(Math.random()*2-1));
+  genNextMapFragment: function H_genMapFragment() {
+    var fragmentSize = (2<<6)+1;
+    var last = this.mapData.length-1;
+    var tmp = Array(fragmentSize);
+    tmp[0] = this.mapData[last][0];
+    tmp[fragmentSize-1] = Math.floor(20+(this.height-this.difficulty()-40)*Math.random());
+    for (var i = (fragmentSize-1)/2; i >= 1; i = i/2) {
+      for (var o = i; o < fragmentSize-1; o += 2*i) {
+        tmp[o] = Math.floor((tmp[o-i]+tmp[o+i])/2+(Math.random()*i-i/2));
+      }
+    }
     this.mapData = this.mapData.concat(tmp.splice(0).map(function(x) {return [x, x+this.difficulty()]}, this));
   },
   drawCourse: function H_drawCourse() {
     var blocksize = 1;
-    this.ctx.translate(-this.step, 0);
-    this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
-    this.ctx.translate(this.step, 0);
+    this.ctx.drawImage(this.bgcanvas, -this.step, 0, this.width, this.height);
     this.ctx.fillStyle = "white";
     this.ctx.fillRect(this.width-this.step, 0, this.step, this.height);
     this.ctx.fillStyle = 'black ';
-    this.genMapFragment();
+
+    this.mapData.splice(0, this.step);
+    if (this.mapData.length < this.width)
+      this.genNextMapFragment();
     for (var x=this.width-this.step; x<this.width; x+=blocksize) {
-      //var points = this.course(x);
       this.ctx.fillRect(x, 0, blocksize, this.mapData[x][0]);
       this.ctx.fillRect(x, this.mapData[x][1], blocksize, this.height-this.mapData[x][1]);
     }
-    this.bgctx.save();
     this.bgctx.drawImage(this.canvas, 0, 0, this.width, this.height);
-    this.bgctx.restore();
   },
   drawScore: function H_drawScore() {
     this.ctx.fillStyle = "white";
@@ -195,8 +188,6 @@ Helicopter.prototype = {
       this.fps = Math.floor(1000/(now-this.lastDraw));
       this.lastDraw = now;
     }
-    this.ctx.save();
-    // clear the viewport
     this.drawCourse();
 
     // draw the player
@@ -217,7 +208,6 @@ Helicopter.prototype = {
 
     this.drawSmoke();
 
-    this.ctx.restore();
     this.offset += this.step;
 
     this.playerAcc += 0.2;
