@@ -37,7 +37,7 @@ function Helicopter(e, settings) {
 
   this.highscore = localStorage.getItem("highscore") || 0;
 
-  if ('ontouchstart' in window) {
+  if ("ontouchstart" in window) {
       var startEvent = "touchstart";
       var stopEvent  = "touchend";
   } else {
@@ -121,8 +121,8 @@ Helicopter.prototype = {
     var blocksize = 1;
     this.bgctx.fillStyle = "white";
     this.bgctx.fillRect(0, 0, this.width, this.height);
-    this.bgctx.fillStyle = 'black';
-    for (var x=0; x<this.width; x+=blocksize) {
+    this.bgctx.fillStyle = "black";
+    for (var x = 0; x < this.width; x += blocksize) {
       this.mapData[x] = [this.height/5, 4*this.height/5];
       this.bgctx.fillRect(x, 0, blocksize, this.height/5);
       this.bgctx.fillRect(x, 4*this.height/5, blocksize, this.height/5);
@@ -169,10 +169,10 @@ Helicopter.prototype = {
     if (this.mapData.length < this.width+1)
       this.genNextMapFragment();
     this.ctx.beginPath();
-    for (var x=this.width-this.step-1; x<=this.width; x+=blocksize) {
+    for (var x = this.width-this.step-1; x <= this.width; x += blocksize) {
       this.ctx.lineTo(x, this.mapData[x][0]);
     }
-    for (var x=this.width; x>=this.width-this.step-1; x-=blocksize) {
+    for (var x = this.width; x >= this.width-this.step-1; x -= blocksize) {
       this.ctx.lineTo(x, this.mapData[x][1]);
     }
     this.ctx.fill();
@@ -189,9 +189,9 @@ Helicopter.prototype = {
       this.scorectx.fillRect(0, 0, this.width, this.scorecanvas.height);
       this.scorectx.fillStyle = "white";
       this.scorectx.textAlign = "left";
-      this.scorectx.fillText("Distance: "+this.offset/10, 10, 20);
+      this.scorectx.fillText("Distance: " + this.offset/10, 10, 20);
       this.scorectx.textAlign = "right";
-      this.scorectx.fillText("Highscore: "+this.highscore, this.width-10, 20);
+      this.scorectx.fillText("Highscore: " + this.highscore, this.width-10, 20);
     }
     this.ctx.drawImage(this.scorecanvas, 0, 0, this.width, this.scorecanvas.height);
 
@@ -199,7 +199,7 @@ Helicopter.prototype = {
   },
   drawFps: function H_drawFps() {
     if (this.settings.fps)
-      this.ctx.fillText("FPS: "+this.fps, this.width-10, 50);
+      this.ctx.fillText("FPS: " + this.fps, this.width-10, 50);
   },
   main: function H_main() {
     if (this.settings.fps) {
@@ -248,8 +248,8 @@ Helicopter.prototype = {
   drawSmoke: function H_drawSmoke() {
     var rand = Math.random()*10;
     var posLength = this.posCache.length;
-    for (var i=0; i<posLength; i++) {
-      if (typeof this.posCache[i] == 'number') {
+    for (var i = 0; i < posLength; i++) {
+      if (typeof this.posCache[i] == "number") {
         this.ctx.drawImage(this.smoke[i], this.playerX-(i*this.step*2)-rand, this.posCache[i]+5, this.smoke[i].width, this.smoke[i].height);
       }
     }
