@@ -1,10 +1,3 @@
-var setInterval_ = function sI_(vCallback, nDelay /*, argumentToPass1, argumentToPass2, etc. */) {
-  var oThis = this, aArgs = Array.prototype.slice.call(arguments, 2);
-  return window.setInterval(vCallback instanceof Function ? function sI_vCallback() {
-    vCallback.apply(oThis, aArgs);
-  } : vCallback, nDelay);
-};
-
 function Helicopter(e, settings) {
   if (!settings)
     settings = {};
@@ -99,6 +92,7 @@ Helicopter.prototype = {
   scorecanvas: null,
   scorectx: null,
   posCache: Array(8),
+  smoke: [],
   course: function H_course(x) {
     var x = x + this.offset;
     var tmp = Math.sin(x/this.width)*this.height/4;
@@ -134,22 +128,22 @@ Helicopter.prototype = {
       this.bgctx.fillRect(x, 4*this.height/5, blocksize, this.height/5);
     }
   },
-  smoke: [],
   startGame: function H_startGame() {
     this.init();
     if (this.settings.sound)
       this.audio.play();
-    this.runId = setInterval_.call(this, this.main, 1000/60);
+    this.main();
   },
   stopGame: function H_stopGame() {
-    clearInterval(this.runId);
     this.audio.pause();
     this.rev.pause();
     this.runId = 0;
+
     if (this.highscore < this.offset/10) {
       this.highscore = this.offset/10;
       localStorage.setItem("highscore", this.offset/10);
     }
+    this.drawScore(true);
   },
   genNextMapFragment: function H_genMapFragment() {
     var fragmentSize = (2<<6)+1;
@@ -195,8 +189,8 @@ Helicopter.prototype = {
                        this.playerX,
                        this.playerY, 52, 25);
   },
-  drawScore: function H_drawScore() {
-    if (this.offset%(this.step*10) == 0) {
+  drawScore: function H_drawScore(force) {
+    if (force || this.offset%(this.step*10) == 0) {
       this.scorectx.fillStyle = "black";
       this.scorectx.fillRect(0, 0, this.width, this.scorecanvas.height);
       this.scorectx.fillStyle = "white";
@@ -248,15 +242,17 @@ Helicopter.prototype = {
 
     this.playerY += this.playerAcc;
 
-    colPoints = this.mapData[this.playerX+25];//this.course(this.playerX+25);
+    colPoints = this.mapData[this.playerX+25];
     if (this.playerY < colPoints[0]-5 || this.playerY > colPoints[1]-20) {
       // COLISSION!
       this.stopGame();
       //this.dieSplash(ctx, offset/10);
+    } else {
+      this.runId = window.requestAnimationFrame(this.main.bind(this));
     }
   },
   drawSmoke: function H_drawSmoke() {
-    var rand = Math.floor(Math.random()*10);
+    var rand = Math.random()*10;
     var posLength = this.posCache.length;
     for (var i=0; i<posLength; i++) {
       if (typeof this.posCache[i] == 'number') {
@@ -269,7 +265,7 @@ Helicopter.prototype = {
     if (!w) w = this.canvas.width;
     this.height = this.canvas.height = this.bgcanvas.height = h;
     this.width = this.canvas.width = this.bgcanvas.width = this.scorecanvas.width = w;
-    this.scorecanvas.height = 20;
+    this.scorecanvas.height = 25;
     this.ctx = this.canvas.getContext("2d");
     this.bgctx = this.bgcanvas.getContext("2d");
     this.scorectx = this.scorecanvas.getContext("2d");
