@@ -161,26 +161,20 @@ Helicopter.prototype = {
   drawCourse: function H_drawCourse() {
     var blocksize = 1;
     this.ctx.drawImage(this.bgcanvas, -this.step, 0, this.width, this.height);
-    this.ctx.fillStyle = "white";
+    this.ctx.fillStyle = "black";
     this.ctx.fillRect(this.width-this.step, 20, this.step, this.height-20);
-    this.ctx.fillStyle = 'black ';
+    this.ctx.fillStyle = "white";
 
     this.mapData.splice(0, this.step);
     if (this.mapData.length < this.width+1)
       this.genNextMapFragment();
     this.ctx.beginPath();
-    this.ctx.moveTo(this.width-this.step, 20);
-    for (var x=this.width-this.step; x<=this.width; x+=blocksize) {
+    for (var x=this.width-this.step-1; x<=this.width; x+=blocksize) {
       this.ctx.lineTo(x, this.mapData[x][0]);
     }
-    this.ctx.lineTo(this.width, 20);
-    this.ctx.fill();
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.width-this.step, this.height);
-    for (var x=this.width-this.step; x<=this.width; x+=blocksize) {
+    for (var x=this.width; x>=this.width-this.step-1; x-=blocksize) {
       this.ctx.lineTo(x, this.mapData[x][1]);
     }
-    this.ctx.lineTo(this.width, this.height);
     this.ctx.fill();
     this.bgctx.drawImage(this.canvas, 0, 0, this.width, this.height);
   },
