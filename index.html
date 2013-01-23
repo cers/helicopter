@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html manifest="helicopter.appcache">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta charset="utf-8">
@@ -48,7 +48,7 @@
     <script src="helicopter.js"></script>
     <script>
       // Install prompt
-      const INSTALL_URL = "http://users.skumleren.net/cers/helicopter/manifest.webapp";
+      const INSTALL_URL = "http://helicopterapp.geeksbynature.dk/manifest.webapp";
       window.addEventListener("load", function W_onload() {
         if (navigator.mozApps) {
           var request = navigator.mozApps.getSelf();

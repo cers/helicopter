@@ -5,7 +5,7 @@
         "name":"Christian Sonne",
         "url":"http://geeksbynature.dk"
     },
-    "launch_path": "/cers/helicopter/index.html",
+    "launch_path": "/index.html",
     "description":"Helicopter game",
     "icons":{
         "128":"/icon.png"
