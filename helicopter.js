@@ -216,13 +216,13 @@ Helicopter.prototype = {
     this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
     this.drawPlayer();
     this.drawScore(true);
-    if (this.fireballCnt < this.fireball.length) {
+    if (this.fireballCnt < this.fireball.length*2) {
       // make smoke rise
       for (var i=0; i<this.posCache.length; i++) {
-        this.posCache[i] -= 8;
+        this.posCache[i] -= 4;
       }
       this.drawSmoke();
-      var img = this.fireball[this.fireballCnt++];
+      var img = this.fireball[Math.floor(this.fireballCnt++/2)];
       this.ctx.drawImage(img, this.playerX, this.playerY-50, img.width, img.height);
       this.runId = window.requestAnimationFrame(this.drawExplosion.bind(this));
     } else {
