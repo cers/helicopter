@@ -1,5 +1,7 @@
 CACHE MANIFEST
 # v1 2013-01-23
+helicopter.js
+requestAnimationFrameShim.js
 data/helicopter.ogg
 data/rev.ogg
 data/fireball-0.png
