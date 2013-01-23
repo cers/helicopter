@@ -123,6 +123,7 @@ Helicopter.prototype = {
     this.ctx.fillStyle = "white";
     this.ctx.textAlign = "center";
     this.ctx.fillText("Click to start", this.width/2, this.height-20);
+    this.posCache = Array(8);
   },
   difficulty: function H_difficulty() {
     return Math.max(100, 4*this.height/5-this.offset/200-65);
