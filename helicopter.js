@@ -25,6 +25,14 @@ function Helicopter(e, settings) {
     this.smoke[i] = img;
   }
 
+  for (var i=0; i<17; i++) {
+    var img = new Image();
+    img.src = "data/fireball-"+i+".png";
+    img.height = 100;
+    img.width = 71;
+    this.fireball[i] = img;
+  }
+
   this.audio = new Audio();
   this.audio.src="data/helicopter.ogg";
   this.audio.loop = true;
@@ -93,6 +101,8 @@ Helicopter.prototype = {
   scorectx: null,
   posCache: Array(8),
   smoke: [],
+  fireball: [],
+  fireballCnt: 0,
   course: function H_course(x) {
     var x = x + this.offset;
     var tmp = Math.sin(x/this.width)*this.height/4;
@@ -106,6 +116,7 @@ Helicopter.prototype = {
     this.step = 8;
     this.mouseDown = false;
     this.mouseDownCnt = 0;
+    this.fireballCnt = 0;
     this.initBackground();
     this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
     this.drawPlayer();
@@ -201,6 +212,24 @@ Helicopter.prototype = {
     if (this.settings.fps)
       this.ctx.fillText("FPS: " + this.fps, this.width-10, 50);
   },
+  drawExplosion: function H_drawExplosion() {
+    this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
+    this.drawPlayer();
+    this.drawScore(true);
+    if (this.fireballCnt < this.fireball.length) {
+      // make smoke rise
+      for (var i=0; i<this.posCache.length; i++) {
+        this.posCache[i] -= 8;
+      }
+      this.drawSmoke();
+      var img = this.fireball[this.fireballCnt++];
+      this.ctx.drawImage(img, this.playerX, this.playerY-50, img.width, img.height);
+      this.runId = window.requestAnimationFrame(this.drawExplosion.bind(this));
+    } else {
+      this.runId = null;
+      //window.requestAnimationFrame(this.drawCourse.bind(this));
+    }
+  },
   main: function H_main() {
     if (this.settings.fps) {
       var now = Date.now();
@@ -240,6 +269,7 @@ Helicopter.prototype = {
     if (this.playerY < colPoints[0]-5 || this.playerY > colPoints[1]-20) {
       // COLISSION!
       this.stopGame();
+      this.runId = window.requestAnimationFrame(this.drawExplosion.bind(this));
       //this.dieSplash(ctx, offset/10);
     } else {
       this.runId = window.requestAnimationFrame(this.main.bind(this));
