@@ -36,21 +36,28 @@ function Helicopter(e, settings) {
 
   this.highscore = localStorage.getItem("highscore") || 0;
 
+  var target = e;
   if ("ontouchstart" in window) {
       var startEvent = "touchstart";
       var stopEvent  = "touchend";
   } else {
+    if (settings.keyboard) {
+      var startEvent = "keydown";
+      var stopEvent  = "keyup";
+      var target = window;
+    } else {
       var startEvent = "mousedown";
       var stopEvent  = "mouseup";
+    }
   }
 
   var self = this;
-  e.addEventListener(startEvent, function H_mouseDown() {
+  target.addEventListener(startEvent, function H_mouseDown() {
     if (!self.runId)
       self.startGame();
     self.mouseDown = true;
   }, false);
-  e.addEventListener(stopEvent, function H_mouseUp() {
+  target.addEventListener(stopEvent, function H_mouseUp() {
     self.mouseDown = false;
   }, false);
 
@@ -351,5 +358,5 @@ Helicopter.prototype = {
   }
 }
 window.addEventListener("load", function D_onload() {
-  new Helicopter(document.getElementById("game"), {sound: true, fps: false, width: 480, height: 320 });
+  new Helicopter(document.getElementById("game"), {sound: true, fps: false, keyboard: true, width: 480, height: 320 });
 }, false);
