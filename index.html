@@ -47,9 +47,10 @@
     <script src="requestAnimationFrameShim.js"></script>
     <script src="helicopter.js"></script>
     <script>
-      // Install prompt
-      const INSTALL_URL = "http://helicopterapp.geeksbynature.dk/manifest.webapp";
       window.addEventListener("load", function W_onload() {
+        var helicopter = new Helicopter(document.getElementById("game"), {sound: true, fps: false, keyboard: false, width: 480, height: 320});
+        // Install prompt
+        const INSTALL_URL = "http://helicopterapp.geeksbynature.dk/manifest.webapp";
         if (navigator.mozApps) {
           var request = navigator.mozApps.getSelf();
           request.onsuccess = function mR_onsuccess() {

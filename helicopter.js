@@ -357,6 +357,3 @@ Helicopter.prototype = {
     this.scorectx = this.scorecanvas.getContext("2d");
   }
 }
-window.addEventListener("load", function D_onload() {
-  new Helicopter(document.getElementById("game"), {sound: true, fps: false, keyboard: true, width: 480, height: 320 });
-}, false);
