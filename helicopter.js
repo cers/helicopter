@@ -17,13 +17,9 @@ function Helicopter(e, settings) {
     this.helicopter[idx++] = img;
   }
 
-  for (var i=0; i<8; i++) {
-    var img = new Image();
-    img.src = "data/small-smoke-0"+(i+1)+".png";
-    img.height = 15;
-    img.width = 15;
-    this.smoke[i] = img;
-  }
+  this.smoke = new Image();
+  this.smoke.src = "data/small-smoke-01.png";
+  this.smoke.height = this.smoke.width = 15;
 
   for (var i=0; i<17; i++) {
     var img = new Image();
@@ -32,6 +28,9 @@ function Helicopter(e, settings) {
     img.width = 71;
     this.fireball[i] = img;
   }
+
+  this.audio = new Audio();
+  this.audio.mozSetup(1, this.audioSampleRate);
 
   this.audioData = new Float32Array(this.audioPreBufferSize);
   for (var o=0; o<this.audioPreBufferSize; o++) {
@@ -98,7 +97,7 @@ Helicopter.prototype = {
   scorecanvas: null,
   scorectx: null,
   posCache: Array(8),
-  smoke: [],
+  smoke: null,
   fireball: [],
   fireballCnt: 0,
   audioWritePosition: 0,
@@ -156,8 +155,6 @@ Helicopter.prototype = {
     this.audioWritePosition = 0;
     this.audioTailPosition = 0;
     this.audioTail = null;
-    this.audio = new Audio();
-    this.audio.mozSetup(1, this.audioSampleRate);
   },
   difficulty: function H_difficulty() {
     return Math.max(100, 4*this.height/5-this.offset/200-65);
@@ -252,13 +249,23 @@ Helicopter.prototype = {
       for (var i=0; i<this.posCache.length; i++) {
         this.posCache[i] -= 4;
       }
-      this.drawSmoke();
+      this.drawSmoke(true);
       var img = this.fireball[Math.floor(this.fireballCnt++/2)];
       this.ctx.drawImage(img, this.playerX, this.playerY-50, img.width, img.height);
       this.runId = window.requestAnimationFrame(this.drawExplosion.bind(this));
     } else {
       this.runId = null;
     }
+  },
+  clearSmoke: function H_clearSmoke() {
+    this.bgctx.fillStyle = "white";
+    var offset = (this.offset-this.step)%Math.floor(this.step*4);
+    for (var i=0; i<this.posCache.length; i++) {
+      this.bgctx.fillRect(this.playerX-this.step*4*i-offset, this.posCache[i], this.smoke.width, this.smoke.height);
+    }
+    this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
+    this.drawPlayer();
+    this.drawScore(true);
   },
   main: function H_main() {
     if (this.settings.fps) {
@@ -280,12 +287,12 @@ Helicopter.prototype = {
     this.drawFps();
 
     // only update posCache periodically
-    if (this.offset%Math.floor(this.step*2) == 0) {
+    if (this.offset%Math.floor(this.step*4) == 0) {
+      this.drawSmoke();
       this.posCache.pop();
       this.posCache.unshift(this.playerY);
     }
 
-    this.drawSmoke();
 
     this.offset += this.step;
 
@@ -301,6 +308,7 @@ Helicopter.prototype = {
     colPoints = this.mapData[this.playerX+25];
     if (this.playerY < colPoints[0]-5 || this.playerY > colPoints[1]-20) {
       // COLISSION!
+      this.clearSmoke();
       this.stopGame();
       this.runId = window.requestAnimationFrame(this.drawExplosion.bind(this));
       //this.dieSplash(ctx, offset/10);
@@ -308,13 +316,17 @@ Helicopter.prototype = {
       this.runId = window.requestAnimationFrame(this.main.bind(this));
     }
   },
-  drawSmoke: function H_drawSmoke() {
-    var rand = Math.random()*10;
-    var posLength = this.posCache.length;
-    for (var i = 0; i < posLength; i++) {
-      if (typeof this.posCache[i] == "number") {
-        this.ctx.drawImage(this.smoke[i], this.playerX-(i*this.step*2)-rand, this.posCache[i]+5, this.smoke[i].width, this.smoke[i].height);
+  drawSmoke: function H_drawSmoke(redraw) {
+    if (redraw) {
+      var rand = Math.random()*10;
+      var posLength = this.posCache.length;
+      for (var i = 0; i < posLength; i++) {
+        if (typeof this.posCache[i] == "number") {
+          this.ctx.drawImage(this.smoke, this.playerX-(i*this.step*4)-rand, this.posCache[i]+5, this.smoke.width, this.smoke.height);
+        }
       }
+    } else {
+      this.bgctx.drawImage(this.smoke, this.playerX, this.playerY, this.smoke.width, this.smoke.height);
     }
   },
   resize: function H_resize(h, w) {
