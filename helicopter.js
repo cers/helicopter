@@ -98,6 +98,8 @@ Helicopter.prototype = {
   scorectx: null,
   posCache: Array(8),
   smoke: null,
+  roofCollition: false,
+  roofCollitionPosition: 0,
   fireball: [],
   fireballCnt: 0,
   audioWritePosition: 0,
@@ -155,6 +157,8 @@ Helicopter.prototype = {
     this.audioWritePosition = 0;
     this.audioTailPosition = 0;
     this.audioTail = null;
+    this.roofCollition = false;
+    this.roofCollitionPosition = 0;
   },
   difficulty: function H_difficulty() {
     return Math.max(100, 4*this.height/5-this.offset/200-65);
@@ -177,10 +181,13 @@ Helicopter.prototype = {
   },
   stopGame: function H_stopGame() {
     this.runId = 0;
+    var score = this.roofCollition ?
+                this.roofCollitionPosition/10 :
+                this.offset/10;
 
-    if (this.highscore < this.offset/10) {
-      this.highscore = this.offset/10;
-      localStorage.setItem("highscore", this.offset/10);
+    if (this.highscore < score) {
+      this.highscore = score;
+      localStorage.setItem("highscore", score);
     }
     this.drawScore(true);
   },
@@ -224,11 +231,14 @@ Helicopter.prototype = {
   },
   drawScore: function H_drawScore(force) {
     if (force || this.offset%(this.step*10) == 0) {
+      var score = this.roofCollition ?
+                  this.roofCollitionPosition/10 :
+                  this.offset/10;
       this.scorectx.fillStyle = "black";
       this.scorectx.fillRect(0, 0, this.width, this.scorecanvas.height);
       this.scorectx.fillStyle = "white";
       this.scorectx.textAlign = "left";
-      this.scorectx.fillText("Distance: " + this.offset/10, 10, 20);
+      this.scorectx.fillText("Distance: " + score, 10, 20);
       this.scorectx.textAlign = "right";
       this.scorectx.fillText("Highscore: " + this.highscore, this.width-10, 20);
     }
@@ -259,7 +269,7 @@ Helicopter.prototype = {
   },
   clearSmoke: function H_clearSmoke() {
     this.bgctx.fillStyle = "white";
-    var offset = (this.offset-this.step)%Math.floor(this.step*4);
+    var offset = (this.offset-this.step)%(this.step*4);
     for (var i=0; i<this.posCache.length; i++) {
       this.bgctx.fillRect(this.playerX-this.step*4*i-offset, this.posCache[i], this.smoke.width, this.smoke.height);
     }
@@ -287,7 +297,7 @@ Helicopter.prototype = {
     this.drawFps();
 
     // only update posCache periodically
-    if (this.offset%Math.floor(this.step*4) == 0) {
+    if (this.offset%(this.step*4) == 0) {
       this.drawSmoke();
       this.posCache.pop();
       this.posCache.unshift(this.playerY);
@@ -298,7 +308,7 @@ Helicopter.prototype = {
 
     this.playerAcc += 0.2;
     this.mouseDownCnt = Math.max(0, this.mouseDownCnt-1);
-    if (this.mouseDown) {
+    if (this.mouseDown && !this.roofCollition) {
       this.playerAcc -= 0.4;
       this.mouseDownCnt = Math.min(18, this.mouseDownCnt+2);
     }
@@ -306,7 +316,14 @@ Helicopter.prototype = {
     this.playerY += this.playerAcc;
 
     colPoints = this.mapData[this.playerX+25];
-    if (this.playerY < colPoints[0]-5 || this.playerY > colPoints[1]-20) {
+
+    if (!this.roofCollition && this.playerY < colPoints[0]-5) {
+      this.roofCollition = true;
+      this.playerAcc = 2;
+      this.roofCollitionPosition = this.offset;
+      this.playerY = colPoints[0];
+    }
+    if (this.playerY > colPoints[1]-20) {
       // COLISSION!
       this.clearSmoke();
       this.stopGame();
