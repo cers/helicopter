@@ -98,8 +98,8 @@ Helicopter.prototype = {
   scorectx: null,
   posCache: Array(8),
   smoke: null,
-  roofCollition: false,
-  roofCollitionPosition: 0,
+  roofCollision: false,
+  roofCollisionPosition: 0,
   fireball: [],
   fireballCnt: 0,
   audioWritePosition: 0,
@@ -157,8 +157,8 @@ Helicopter.prototype = {
     this.audioWritePosition = 0;
     this.audioTailPosition = 0;
     this.audioTail = null;
-    this.roofCollition = false;
-    this.roofCollitionPosition = 0;
+    this.roofCollision = false;
+    this.roofCollisionPosition = 0;
   },
   difficulty: function H_difficulty() {
     return Math.max(100, 4*this.height/5-this.offset/200-65);
@@ -181,8 +181,8 @@ Helicopter.prototype = {
   },
   stopGame: function H_stopGame() {
     this.runId = 0;
-    var score = this.roofCollition ?
-                this.roofCollitionPosition/10 :
+    var score = this.roofCollision ?
+                this.roofCollisionPosition/10 :
                 this.offset/10;
 
     if (this.highscore < score) {
@@ -231,8 +231,8 @@ Helicopter.prototype = {
   },
   drawScore: function H_drawScore(force) {
     if (force || this.offset%(this.step*10) == 0) {
-      var score = this.roofCollition ?
-                  this.roofCollitionPosition/10 :
+      var score = this.roofCollision ?
+                  this.roofCollisionPosition/10 :
                   this.offset/10;
       this.scorectx.fillStyle = "black";
       this.scorectx.fillRect(0, 0, this.width, this.scorecanvas.height);
@@ -303,28 +303,28 @@ Helicopter.prototype = {
       this.posCache.unshift(this.playerY);
     }
 
-
     this.offset += this.step;
 
     this.playerAcc += 0.2;
     this.mouseDownCnt = Math.max(0, this.mouseDownCnt-1);
-    if (this.mouseDown && !this.roofCollition) {
+    if (this.mouseDown && !this.roofCollision) {
       this.playerAcc -= 0.4;
       this.mouseDownCnt = Math.min(18, this.mouseDownCnt+2);
     }
 
     this.playerY += this.playerAcc;
 
-    colPoints = this.mapData[this.playerX+25];
+    var colPoints = this.mapData[this.playerX+25];
 
-    if (!this.roofCollition && this.playerY < colPoints[0]-5) {
-      this.roofCollition = true;
-      this.playerAcc = 2;
-      this.roofCollitionPosition = this.offset;
+    // 
+    if (this.playerY < colPoints[0]-5) {
+      this.roofCollision = true;
+      this.playerAcc = Math.max(0, this.playerAcc);
+      this.roofCollisionPosition = this.offset;
       this.playerY = colPoints[0];
     }
     if (this.playerY > colPoints[1]-20) {
-      // COLISSION!
+      // COLLISION!
       this.clearSmoke();
       this.stopGame();
       this.runId = window.requestAnimationFrame(this.drawExplosion.bind(this));
