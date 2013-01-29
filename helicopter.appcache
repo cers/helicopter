@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# v1 2013-01-23
+# v1 2013-01-29
 index.html
 helicopter.js
 requestAnimationFrameShim.js
@@ -40,11 +40,4 @@ data/small-28.png
 data/small-29.png
 data/small-30.png
 data/small-smoke-01.png
-data/small-smoke-02.png
-data/small-smoke-03.png
-data/small-smoke-04.png
-data/small-smoke-05.png
-data/small-smoke-06.png
-data/small-smoke-07.png
-data/small-smoke-08.png
 icon.png
