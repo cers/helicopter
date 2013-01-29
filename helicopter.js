@@ -7,6 +7,7 @@ function Helicopter(e, settings) {
   this.resize(settings.height, settings.width);
   this.settings.sound = !!settings.sound;
   this.settings.fps = !!settings.fps;
+  this.settings.keyboard = !!settings.keyboard;
   this.ctx.font = this.scorectx.font = "18px sans-serif";
 
   for (var i=12, idx=0; i<31; i++) {
@@ -34,36 +35,11 @@ function Helicopter(e, settings) {
 
   this.audioData = new Float32Array(this.audioPreBufferSize);
   for (var o=0; o<this.audioPreBufferSize; o++) {
-    var a =  Math.max(0, Math.sin(2*Math.PI*60*o/24000));
+    var a =  Math.max(0, Math.sin(Math.PI*o/200));
     this.audioData[o] = a*Math.sin(2*Math.PI*a*o/700+1);
   }
 
   this.highscore = localStorage.getItem("highscore") || 0;
-
-  var target = e;
-  if ("ontouchstart" in window) {
-      var startEvent = "touchstart";
-      var stopEvent  = "touchend";
-  } else {
-    if (settings.keyboard) {
-      var startEvent = "keydown";
-      var stopEvent  = "keyup";
-      var target = window;
-    } else {
-      var startEvent = "mousedown";
-      var stopEvent  = "mouseup";
-    }
-  }
-
-  var self = this;
-  target.addEventListener(startEvent, function H_mouseDown() {
-    if (!self.runId)
-      self.startGame();
-    self.mouseDown = true;
-  }, false);
-  target.addEventListener(stopEvent, function H_mouseUp() {
-    self.mouseDown = false;
-  }, false);
 
   this.init();
 
@@ -106,7 +82,7 @@ Helicopter.prototype = {
   audioTailPosition: 0,
   audioTail: null,
   audioSampleRate: 24000,
-  audioPreBufferSize: 2400,
+  audioPreBufferSize: 2000,
   audioData: null,
   handleAudio: function H_handleAudio() {
     var written;
@@ -138,6 +114,33 @@ Helicopter.prototype = {
       this.audioWritePosition += written;
     }
   },
+  mouseDownHandler: function H_mouseDownHandler() {
+    if (!this.runId)
+      this.startGame();
+    this.mouseDown = true;
+  },
+  mouseUpHandler: function H_mouseUpHandler() {
+    this.mouseDown = false;
+  },
+  setupHandlers: function H_setupHandlers() {
+    var target = this.canvas;
+    if ("ontouchstart" in window) {
+        var startEvent = "touchstart";
+        var stopEvent  = "touchend";
+    } else {
+      if (this.settings.keyboard) {
+        var startEvent = "keydown";
+        var stopEvent  = "keyup";
+        var target = window;
+      } else {
+        var startEvent = "mousedown";
+        var stopEvent  = "mouseup";
+      }
+    }
+
+    target.addEventListener(startEvent, this.mouseDownHandler.bind(this), false);
+    target.addEventListener(stopEvent, this.mouseUpHandler.bind(this), false);
+  },
   init: function H_init() {
     this.playerX = this.width/5;
     this.playerY = this.height/2;
@@ -159,6 +162,7 @@ Helicopter.prototype = {
     this.audioTail = null;
     this.roofCollision = false;
     this.roofCollisionPosition = 0;
+    this.setupHandlers();
   },
   difficulty: function H_difficulty() {
     return Math.max(100, 4*this.height/5-this.offset/200-65);
@@ -247,8 +251,8 @@ Helicopter.prototype = {
 
   },
   drawFps: function H_drawFps() {
-    if (this.settings.fps)
-      this.ctx.fillText("FPS: " + this.fps, this.width-10, 50);
+    this.ctx.textAlign = "right";
+    this.ctx.fillText("FPS: " + this.fps, this.width-10, 50);
   },
   drawExplosion: function H_drawExplosion() {
     this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
@@ -284,8 +288,6 @@ Helicopter.prototype = {
       this.lastDraw = now;
     }
 
-    if(this.settings.sound)
-      this.handleAudio();
     this.drawCourse();
 
     // draw the player
@@ -293,8 +295,9 @@ Helicopter.prototype = {
 
     // draw score
     this.drawScore();
-
-    this.drawFps();
+   
+   if (this.settings.fps)
+      this.drawFps();
 
     // only update posCache periodically
     if (this.offset%(this.step*4) == 0) {
@@ -316,7 +319,6 @@ Helicopter.prototype = {
 
     var colPoints = this.mapData[this.playerX+25];
 
-    // 
     if (this.playerY < colPoints[0]-5) {
       this.roofCollision = true;
       this.playerAcc = Math.max(0, this.playerAcc);
@@ -330,6 +332,8 @@ Helicopter.prototype = {
       this.runId = window.requestAnimationFrame(this.drawExplosion.bind(this));
       //this.dieSplash(ctx, offset/10);
     } else {
+      if (this.settings.sound)
+        this.handleAudio();
       this.runId = window.requestAnimationFrame(this.main.bind(this));
     }
   },
@@ -355,5 +359,31 @@ Helicopter.prototype = {
     this.ctx = this.canvas.getContext("2d");
     this.bgctx = this.bgcanvas.getContext("2d");
     this.scorectx = this.scorecanvas.getContext("2d");
+  },
+  updateSetting: function H_updateSetting(name, value) {
+    switch (name) {
+      case "audio":
+        this.settings.sound = value;
+        break;
+      case "keyboard":
+        if (value) {
+          if ("ontouchstart" in window) {
+            this.canvas.removeEventListener("touchstart", this.mouseDownHandler, false);
+            this.canvas.removeEventListener("touchend", this.mouseUpHandler, false);
+          } else {
+            this.canvas.removeEventListener("mousedown", this.mouseDownHandler, false);
+            this.canvas.removeEventListener("mouseup", this.mouseUpHandler, false);
+          }
+        }
+        window.removeEventListener("keydown", this.mouseDownHandler, false);
+        window.removeEventListener("keyup", this.mouseUpHandler, false);
+
+        this.settings.keyboard = value;
+        this.setupHandlers();
+        break;
+      case "fps":
+        this.settings.fps = value;
+        break;
+    }
   }
 }
