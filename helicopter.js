@@ -30,13 +30,21 @@ function Helicopter(e, settings) {
     this.fireball[i] = img;
   }
 
+  for (var i=0; i<6; i++) {
+    var img = new Image();
+    img.src = "data/crash-0"+i+".png";
+    img.height = 25;
+    img.width = 52;
+    this.crash[i] = img;
+  }
+
   this.audio = new Audio();
   this.audio.mozSetup(1, this.audioSampleRate);
 
-  this.audioData = new Float32Array(this.audioPreBufferSize);
-  for (var o=0; o<this.audioPreBufferSize; o++) {
-    var a =  Math.max(0, Math.sin(Math.PI*o/200));
-    this.audioData[o] = a*Math.sin(2*Math.PI*a*o/700+1);
+  this.audioData = new Float32Array(this.audioPreBufferSize*2);
+  for (var o=0; o<this.audioPreBufferSize*2; o++) {
+    var a =  Math.max(0, Math.sin(Math.PI*o/800));
+    this.audioData[o] = a*Math.sin(10*Math.sin(7*o/this.audioPreBufferSize)+o/40);
   }
 
   this.highscore = localStorage.getItem("highscore") || 0;
@@ -74,6 +82,7 @@ Helicopter.prototype = {
   scorectx: null,
   posCache: Array(8),
   smoke: null,
+  crash: [],
   roofCollision: false,
   roofCollisionPosition: 0,
   fireball: [],
@@ -82,33 +91,24 @@ Helicopter.prototype = {
   audioTailPosition: 0,
   audioTail: null,
   audioSampleRate: 24000,
-  audioPreBufferSize: 2000,
+  audioPreBufferSize: 24000,
   audioData: null,
   handleAudio: function H_handleAudio() {
     var written;
     // Check if some data was not written in previous attempts.
-    if(this.audioTail) {
-      written = this.audio.mozWriteAudio(this.audioTail.subarray(this.audioTailPosition));
+    if(this.audioTailPosition != 0) {
+      written = this.audio.mozWriteAudio(this.audioData.subarray(this.audioTailPosition));
       this.audioWritePosition += written;
       this.audioTailPosition += written;
-      if(this.audioTailPosition < this.audioTail.length) {
-        // Not all the data was written, saving the tail...
-        return; // ... and exit the function.
-      }
-      this.audioTail = null;
     }
     // Check if we need add some data to the audio output.
     var currentPosition = this.audio.mozCurrentSampleOffset();
     var available = currentPosition + this.audioPreBufferSize - this.audioWritePosition;
     if(available > 0) {
-      // Request some sound data from the callback function.
-      var soundData = new Float32Array(this.audioData);
-
       // Writting the data.
-      written = this.audio.mozWriteAudio(soundData);
-      if(written < soundData.length) {
+      written = this.audio.mozWriteAudio(this.audioData);
+      if(written < this.audioData.length) {
         // Not all the data was written, saving the tail.
-        this.audioTail = soundData;
         this.audioTailPosition = written;
       }
       this.audioWritePosition += written;
@@ -199,14 +199,17 @@ Helicopter.prototype = {
     var fragmentSize = (2<<6)+1;
     var last = this.mapData.length-1;
     var tmp = Array(fragmentSize);
-    tmp[0] = this.mapData[last][0];
-    tmp[fragmentSize-1] = Math.floor(20+(this.height-this.difficulty()-40)*Math.random());
+    tmp[0] = this.mapData[last];
+    var difficulty = this.difficulty();
+    var random = Math.floor(20+(this.height-this.difficulty()-40)*Math.random());
+    tmp[fragmentSize-1] = [random, random+difficulty];
     for (var i = (fragmentSize-1)/2; i >= 1; i = i/2) {
       for (var o = i; o < fragmentSize-1; o += 2*i) {
-        tmp[o] = Math.floor((tmp[o-i]+tmp[o+i])/2+(Math.random()*i-i/2));
+        var val = Math.floor((tmp[o-i][0]+tmp[o+i][0])/2+(Math.random()*i-i/2));
+        tmp[o] = [val, val+difficulty]
       }
     }
-    this.mapData = this.mapData.concat(tmp.splice(0).map(function gNMF_map(x) {return [x, x+this.difficulty()]}, this));
+    this.mapData = this.mapData.concat(tmp.splice(0));
   },
   drawCourse: function H_drawCourse() {
     var blocksize = 1;
@@ -229,7 +232,15 @@ Helicopter.prototype = {
     this.bgctx.drawImage(this.canvas, 0, 0, this.width, this.height);
   },
   drawPlayer: function H_drawPlayer() {
-    this.ctx.drawImage(this.helicopter[this.mouseDownCnt],
+    if (this.roofCollision) {
+      var pos = [0,1,2,3,4,5,4,3,2,1][
+        Math.floor((this.offset-this.roofCollisionPosition)/(this.step*2))%10
+      ];
+      var player = this.crash[pos];
+    }
+    else
+      var player = this.helicopter[this.mouseDownCnt];
+    this.ctx.drawImage(player,
                        this.playerX,
                        this.playerY, 52, 25);
   },
@@ -326,6 +337,7 @@ Helicopter.prototype = {
       this.playerY = colPoints[0];
     }
     if (this.playerY > colPoints[1]-20) {
+      this.roofCollision = false;
       // COLLISION!
       this.clearSmoke();
       this.stopGame();
