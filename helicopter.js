@@ -39,7 +39,11 @@ function Helicopter(e, settings) {
   }
 
   this.audio = new Audio();
-  this.audio.mozSetup(1, this.audioSampleRate);
+  try {
+    this.audio.mozSetup(1, this.audioSampleRate);
+  } catch (e) {
+    this.settings.sound = false;
+  }
 
   this.audioData = new Float32Array(this.audioPreBufferSize*2);
   for (var o=0; o<this.audioPreBufferSize*2; o++) {
