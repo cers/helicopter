@@ -250,7 +250,7 @@ Helicopter.prototype = {
   },
   drawScore: function H_drawScore(force) {
     if (force || this.offset%(this.step*10) == 0) {
-      var score = this.roofCollision ?
+      var score = this.roofCollisionPosition ?
                   this.roofCollisionPosition/10 :
                   this.offset/10;
       this.scorectx.fillStyle = "black";
@@ -335,9 +335,11 @@ Helicopter.prototype = {
     var colPoints = this.mapData[this.playerX+25];
 
     if (this.playerY < colPoints[0]-5) {
-      this.roofCollision = true;
+      if (!this.roofCollision) {
+        this.roofCollision = true;
+        this.roofCollisionPosition = this.offset;
+      }
       this.playerAcc = Math.max(0, this.playerAcc);
-      this.roofCollisionPosition = this.offset;
       this.playerY = colPoints[0];
     }
     if (this.playerY > colPoints[1]-20) {
