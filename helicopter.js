@@ -5,7 +5,7 @@ function Helicopter(e, settings) {
   this.bgcanvas = document.createElement("canvas");
   this.scorecanvas = document.createElement("canvas");
   this.resize(settings.height, settings.width);
-  this.settings.sound = !!settings.sound;
+  //this.settings.sound = !!settings.sound;
   this.settings.fps = !!settings.fps;
   this.settings.keyboard = !!settings.keyboard;
   this.ctx.font = this.scorectx.font = "18px sans-serif";
@@ -38,6 +38,7 @@ function Helicopter(e, settings) {
     this.crash[i] = img;
   }
 
+  /* Disable audio until web audio api becomes stable
   this.audio = new Audio();
   try {
     this.audio.mozSetup(1, this.audioSampleRate);
@@ -50,6 +51,7 @@ function Helicopter(e, settings) {
     var a =  Math.max(0, Math.sin(Math.PI*o/800));
     this.audioData[o] = a*Math.sin(10*Math.sin(7*o/this.audioPreBufferSize)+o/40);
   }
+  */
 
   this.highscore = localStorage.getItem("highscore") || 0;
 
@@ -91,6 +93,7 @@ Helicopter.prototype = {
   roofCollisionPosition: 0,
   fireball: [],
   fireballCnt: 0,
+  /*
   audioWritePosition: 0,
   audioTailPosition: 0,
   audioTail: null,
@@ -118,6 +121,7 @@ Helicopter.prototype = {
       this.audioWritePosition += written;
     }
   },
+  */
   mouseDownHandler: function H_mouseDownHandler() {
     if (!this.runId)
       this.startGame();
@@ -350,8 +354,8 @@ Helicopter.prototype = {
       this.runId = window.requestAnimationFrame(this.drawExplosion.bind(this));
       //this.dieSplash(ctx, offset/10);
     } else {
-      if (this.settings.sound)
-        this.handleAudio();
+      //if (this.settings.sound)
+      //  this.handleAudio();
       this.runId = window.requestAnimationFrame(this.main.bind(this));
     }
   },
@@ -380,9 +384,9 @@ Helicopter.prototype = {
   },
   updateSetting: function H_updateSetting(name, value) {
     switch (name) {
-      case "audio":
+      /*case "audio":
         this.settings.sound = value;
-        break;
+        break;*/
       case "keyboard":
         if (value) {
           if ("ontouchstart" in window) {
