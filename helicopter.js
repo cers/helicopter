@@ -9,6 +9,7 @@ function Helicopter(e, settings) {
   this.settings.fps = !!settings.fps;
   this.settings.keyboard = !!settings.keyboard;
   this.ctx.font = this.scorectx.font = "18px sans-serif";
+  this.ctx.strokeStyle = "black";
 
   for (var i=12, idx=0; i<31; i++) {
     var img = new Image();
@@ -193,7 +194,7 @@ Helicopter.prototype = {
   },
   stopGame: function H_stopGame() {
     this.runId = 0;
-    var score = this.roofCollision ?
+    var score = this.roofCollisionPosition ?
                 this.roofCollisionPosition/10 :
                 this.offset/10;
 
@@ -214,7 +215,7 @@ Helicopter.prototype = {
     for (var i = (fragmentSize-1)/2; i >= 1; i = i/2) {
       for (var o = i; o < fragmentSize-1; o += 2*i) {
         var val = Math.floor((tmp[o-i][0]+tmp[o+i][0])/2+(Math.random()*i-i/2));
-        tmp[o] = [val, val+difficulty]
+        tmp[o] = [val, val+difficulty];
       }
     }
     this.mapData = this.mapData.concat(tmp.splice(0));
@@ -237,6 +238,19 @@ Helicopter.prototype = {
       this.ctx.lineTo(x, this.mapData[x][1]);
     }
     this.ctx.fill();
+    if (this.highscore > 0) {
+      var drawPos = this.offset + this.width - this.playerX - this.helicopter[0].width;
+      if (this.highscore * 10 > drawPos && this.highscore * 10 <= drawPos + this.step) {
+        var hsPos = this.width - this.step / 2;
+        this.ctx.strokeStyle = "red";
+        this.ctx.beginPath();
+        this.ctx.moveTo(hsPos, this.mapData[hsPos][0]);
+        this.ctx.lineTo(hsPos, this.mapData[hsPos][1]);
+        this.ctx.closePath();
+        this.ctx.stroke();
+        this.ctx.strokeStyle = "black";
+      }
+    }
     this.bgctx.drawImage(this.canvas, 0, 0, this.width, this.height);
   },
   drawPlayer: function H_drawPlayer() {
@@ -266,8 +280,6 @@ Helicopter.prototype = {
       this.scorectx.fillText("Highscore: " + this.highscore, this.width-10, 20);
     }
     this.ctx.drawImage(this.scorecanvas, 0, 0, this.width, this.scorecanvas.height);
-
-
   },
   drawFps: function H_drawFps() {
     this.ctx.textAlign = "right";
