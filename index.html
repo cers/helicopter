@@ -162,32 +162,36 @@
 
         // Install prompt
         const INSTALL_URL = "http://helicopterapp.geeksbynature.dk/manifest.webapp";
+        var p = document.getElementById("prompt");
         if (navigator.mozApps) {
           var request = navigator.mozApps.getSelf();
           request.onsuccess = function mR_onsuccess() {
             if (!request.result) {
-              var p = document.getElementById("prompt");
               p.style.display = "block";
-              if ('ontouchstart' in window) {
-                var stopEvent  = "touchend";
-              } else {
-                var stopEvent  = "mouseup";
-              }
               document.getElementById("install").addEventListener(stopEvent, function Install_onclick() {
                 var installRequest = navigator.mozApps.install(INSTALL_URL);
                 installRequest.onsuccess = function iR_onsuccess() {
                   p.style.display = "none";
                 };
               }, false);
-              document.getElementById("play").addEventListener(stopEvent, function Play_onclick() {
-                p.style.display = "none";
-                game.startGame();
-              }, false);
             }
           };
+        } else {
+          p.style.display = "block";
+          var i = document.getElementById("install");
+          i.style.background = "repeating-linear-gradient( -45deg, #6a6a6a 0px, #6a6a6a 19px, #676767 20px, #676767 39px)";
+          i.style.borderStyle = "dashed";
+          i.style.cursor = "default";
         }
-        // Splash screen
-
+        if ('ontouchstart' in window) {
+          var stopEvent  = "touchend";
+        } else {
+          var stopEvent  = "mouseup";
+        }
+        document.getElementById("play").addEventListener(stopEvent, function Play_onclick() {
+          p.style.display = "none";
+          game.startGame();
+        }, false);
       }, false);
     </script>
   </head>
