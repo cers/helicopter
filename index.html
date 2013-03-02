@@ -24,7 +24,7 @@
       }
       ul {
         list-style: none;
-        margin: 58px 0 0 0;
+        margin: 108px 0 0 0;
         padding: 0;
       }
       li {
@@ -45,51 +45,12 @@
       li:hover {
         text-decoration: underline;
       }
-
-      li#settings {
-        background: white;
-        height: 80px;
-        width: 358px;
-        margin-top: 20px;
-      }
-
-      li#settings ul {
-        margin: 0;
-      }
-
-      li#settings li {
-        font-size: 0.8em;
-        border: none;
-        width: auto;
-        height: 30px;
-        line-height: 20px;
-        margin: 10px 0 0 10px;
-        text-decoration: none;
-      }
-      input {
-        display: none;
-      }
-      label {
-        display: inline-block;
-        width: 50px;
-        background: red;
-        height: 25px;
-      }
-      label:before {
-        content: "off";
-      }
-      input:checked + label {
-        background: green;
-      }
-      input:checked + label:before {
-        content: "on";
-      }
     </style>
     <script src="requestAnimationFrameShim.js"></script>
     <script src="helicopter.js"></script>
     <script>
       window.addEventListener("load", function W_onload() {
-        var helicopter = new Helicopter(document.getElementById("game"), {sound: true, fps: false, keyboard: false, width: 480, height: 320});
+        var helicopter = new Helicopter(document.getElementById("game"), {width: 480, height: 320});
         // Install prompt
         const INSTALL_URL = "http://helicopterapp.geeksbynature.dk/manifest.webapp";
         if (navigator.mozApps) {
@@ -115,14 +76,6 @@
             }
           };
         }
-        // Configuration handler
-        var options = document.querySelectorAll("ul ul input");
-        for (var i=0; i<options.length; i++) {
-          options[i].onchange = function() {
-            helicopter.updateSetting(this.id, this.checked);
-          }
-          options[i].onchange();
-        }
       }, false);
     </script>
   </head>
@@ -132,22 +85,6 @@
       <ul>
         <li id="install">Install</li>
         <li id="play">Play</li>
-        <li id="settings">
-          <ul>
-            <li>Audio
-              <input type="checkbox" name="audio" id="audio">
-              <label for="audio"></label>
-            </li>
-            <li>FPS
-              <input type="checkbox" name="fps" id="fps">
-              <label for="fps"></label>
-            </li>
-            <li>Keyboard
-              <input type="checkbox" name="keyboard" id="keyboard">
-              <label for="keyboard"></label>
-            </li>
-          </ul>
-        </li>
       </ul>
     </div>
   </body>
