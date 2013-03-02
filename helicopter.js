@@ -162,7 +162,6 @@ Helicopter.prototype = {
     this.main();
   },
   stopGame: function H_stopGame() {
-    this.runId = 0;
     var score = this.roofCollisionPosition ?
                 this.roofCollisionPosition/10 :
                 this.offset/10;
@@ -172,10 +171,14 @@ Helicopter.prototype = {
       localStorage.setItem("highscore", score);
       this.deathArgs.newHighscore = true;
     }
-    var lastScores = localStorage.getItem("lastScores") || "";
-    lastScores = lastScores.split(",");
-    if (lastScores.length > 4) {
-      lastScores = lastScores.slice(1);
+    var lastScores = localStorage.getItem("lastScores");
+    if (lastScores) {
+      lastScores = lastScores.split(",");
+      if (lastScores.length > 4) {
+        lastScores = lastScores.slice(1);
+      }
+    } else {
+      lastScores = [];
     }
     lastScores.push(score);
     localStorage.setItem("lastScores", lastScores.join(","));
