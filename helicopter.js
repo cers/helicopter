@@ -187,9 +187,9 @@ Helicopter.prototype = {
     if (rank > this.rank) {
       this.rank = rank;
       localStorage.setItem("rank", rank);
-      localStorage.setItem("rankName", this.ranks[rank]);
       this.deathArgs.newRank = true;
     }
+    localStorage.setItem("rankName", this.ranks[rank]);
 
     this.drawScore(true);
   },
