@@ -37,7 +37,16 @@ function Helicopter(e, settings) {
   }
 
   this.highscore = localStorage.getItem("highscore") || 0;
+  this.rank = localStorage.getItem("rank") || 0;
 
+  if (settings.startButton)
+    this.startButton = settings.startButton;
+  if (settings.onStart)
+    this.onStart = settings.onStart;
+  if (settings.onDeath)
+    this.onDeath = settings.onDeath;
+
+  this.setupHandlers();
   this.init();
 
   this.drawPlayer();
@@ -74,9 +83,26 @@ Helicopter.prototype = {
   roofCollisionPosition: 0,
   fireball: [],
   fireballCnt: 0,
+  onStart: null,
+  onDeath: null,
+  deathArgs: null,
+  ranks: [
+    "Airman",
+    "Airman First Class",
+    "Senior Airman",
+    "Staff Sergeant",
+    "Technical Sergeant",
+    "Master Sergeant",
+    "First Master Sergeant",
+    "Senior Master Sergeant",
+    "First Senior Master Sergeant",
+    "Chief Master Sergeant",
+    "First Chief Master Sergeant",
+    "Command Chief Master Sergeant",
+    "Chief Master Sergeant of the Air Force"
+  ],
+  rank: null,
   mouseDownHandler: function H_mouseDownHandler() {
-    if (!this.runId)
-      this.startGame();
     this.mouseDown = true;
   },
   mouseUpHandler: function H_mouseUpHandler() {
@@ -94,6 +120,8 @@ Helicopter.prototype = {
 
     this.canvas.addEventListener(startEvent, this.mouseDownHandler.bind(this), false);
     this.canvas.addEventListener(stopEvent, this.mouseUpHandler.bind(this), false);
+    if (this.startButton)
+      this.startButton.addEventListener(stopEvent, this.startGame.bind(this), false);
   },
   init: function H_init() {
     this.playerX = this.width/5;
@@ -107,13 +135,10 @@ Helicopter.prototype = {
     this.initBackground();
     this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
     this.drawPlayer();
-    this.ctx.fillStyle = "white";
-    this.ctx.textAlign = "center";
-    this.ctx.fillText("Click to start", this.width/2, this.height-20);
     this.posCache = Array(8);
     this.roofCollision = false;
     this.roofCollisionPosition = 0;
-    this.setupHandlers();
+    this.deathArgs = {newHighscore: false, newRank: false};
   },
   difficulty: function H_difficulty() {
     return Math.max(100, 4*this.height/5-this.offset/200-65);
@@ -131,6 +156,8 @@ Helicopter.prototype = {
     }
   },
   startGame: function H_startGame() {
+    if (this.onStart)
+      this.onStart();
     this.init();
     this.main();
   },
@@ -139,10 +166,11 @@ Helicopter.prototype = {
     var score = this.roofCollisionPosition ?
                 this.roofCollisionPosition/10 :
                 this.offset/10;
-
+    this.score = score;
     if (this.highscore < score) {
       this.highscore = score;
       localStorage.setItem("highscore", score);
+      this.deathArgs.newHighscore = true;
     }
     var lastScores = localStorage.getItem("lastScores") || "";
     lastScores = lastScores.split(",");
@@ -151,7 +179,15 @@ Helicopter.prototype = {
     }
     lastScores.push(score);
     localStorage.setItem("lastScores", lastScores.join(","));
-    this.average = lastScores.reduce(function(a, b) { return parseInt(a) + parseInt(b); }) / lastScores.length;
+
+    var rank = ~~(this.highscore/150);
+    if (rank > this.rank) {
+      this.rank = rank;
+      localStorage.setItem("rank", rank);
+      localStorage.setItem("rankName", this.ranks[rank]);
+      this.deathArgs.newRank = true;
+    }
+
     this.drawScore(true);
   },
   genNextMapFragment: function H_genMapFragment() {
@@ -246,6 +282,8 @@ Helicopter.prototype = {
       this.runId = window.requestAnimationFrame(this.drawExplosion.bind(this));
     } else {
       this.runId = null;
+      if (this.onDeath)
+        this.onDeath(this.score, this.deathArgs);
     }
   },
   clearSmoke: function H_clearSmoke() {
@@ -310,7 +348,6 @@ Helicopter.prototype = {
       this.clearSmoke();
       this.stopGame();
       this.runId = window.requestAnimationFrame(this.drawExplosion.bind(this));
-      //this.dieSplash(ctx, offset/10);
     } else {
       this.runId = window.requestAnimationFrame(this.main.bind(this));
     }

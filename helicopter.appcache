@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# v1 2013-01-29
+# v1 2013-03-02
 index.html
 helicopter.js
 requestAnimationFrameShim.js
@@ -47,3 +47,16 @@ data/crash-04.png
 data/crash-05.png
 data/small-smoke-01.png
 icon.png
+data/ensignia-00.png
+data/ensignia-01.png
+data/ensignia-02.png
+data/ensignia-03.png
+data/ensignia-04.png
+data/ensignia-05.png
+data/ensignia-06.png
+data/ensignia-07.png
+data/ensignia-08.png
+data/ensignia-09.png
+data/ensignia-10.png
+data/ensignia-11.png
+data/ensignia-12.png

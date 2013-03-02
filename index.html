@@ -5,10 +5,11 @@
     <meta charset="utf-8">
     <link rel="icon" type="image/png" href="icon.png">
     <style>
-      html, body, canvas {
+      html, body, canvas, div {
         margin: 0;
         padding: 0;
         line-height: 0;
+        font-family: "verdana";
       }
       /* Install prompt */
       #prompt {
@@ -21,6 +22,7 @@
         top: 0;
         left: 0;
         display: none;
+        z-index: 2;
       }
       ul {
         list-style: none;
@@ -37,7 +39,6 @@
         border: 1px black solid;
         text-align: center;
         line-height: 100px;
-        font-family: "verdana";
         font-size: 2em;
         cursor: pointer;
         font-variant: small-caps;
@@ -45,12 +46,120 @@
       li:hover {
         text-decoration: underline;
       }
+      /* Splash screen */
+      #splash {
+        height: 320px;
+        width: 480px;
+        background: rgba(0, 0, 0, 0.75);
+        position: absolute;
+        top: 0;
+        left: 0;
+        color: white;
+        font-weight: bold;
+        display: none;
+      }
+      #rank {
+        position: absolute;
+        width: 105px;
+        height: 170px;
+        border: 2px white solid;
+        top: 25px;
+        left: 25px;
+        background-position: center center;
+        background-repeat: no-repeat;
+      }
+      #start {
+        position: absolute;
+        bottom: 25px;
+        left: 25px;
+        right: 25px;
+        height: 75px;
+        border: 2px white solid;
+        line-height: 75px;
+        text-align: center;
+        font-size: 2em;
+        cursor: pointer;
+        background: rgba(255,255,255,0.5);
+      }
+      #highscore {
+        position: absolute;
+        top: 25px;
+        right: 25px;
+        left: 155px;
+        height: 50px;
+      }
+      #congratulation, #consolidation {
+        display: none;
+        line-height: 1em;
+      }
+      #highscore.new #congratulation {
+        display: block;
+      }
+      #highscore:not(.new) #consolidation {
+        display: block;
+      }
+      #rankText {
+        position: absolute;
+        top: 100px;
+        left: 155px;
+        right: 25px;
+        height: 50px;
+        line-height: 1em;
+      }
+      #promotion, #statusquo {
+        display: none;
+      }
+      #rankText.new #promotion {
+        display: inline;
+      }
+      #rankText:not(.new) #statusquo {
+        display: inline;
+      }
+
+      #average {
+        position: absolute;
+        top: 175px;
+        left: 155px;
+        right: 25px;
+        height: 50px;
+        line-height: 1em;
+      }
     </style>
     <script src="requestAnimationFrameShim.js"></script>
     <script src="helicopter.js"></script>
     <script>
+      var game;
       window.addEventListener("load", function W_onload() {
-        var helicopter = new Helicopter(document.getElementById("game"), {width: 480, height: 320});
+        game = new Helicopter(document.getElementById("game"), {
+          width: 480,
+          height: 320,
+          startButton: document.getElementById("start"),
+          onStart: function() {
+            document.getElementById("splash").style.display = "none";
+          },
+          onDeath: function(score, args) {
+            var rankEl = document.getElementById("rank");
+            var rank = ~~(localStorage.getItem("highscore")/150);
+            rankEl.style.backgroundImage = "url(data/ensignia-"+((new Array(3 - rank.toString().length)).join('0') + rank)+".png)";
+            var highscoreEl = document.getElementById("highscore");
+            if ((args.newHighscore && !highscoreEl.classList.contains("new")) || (!args.newHighscore && highscoreEl.classList.contains("new")))
+              highscoreEl.classList.toggle("new");
+            if (args.newHighscore) {
+              highscoreEl.getElementsByTagName("span")[0].innerHTML = game.highscore;
+            }
+            var ranktextEl = document.getElementById("rankText");
+            if ((args.newRank && !ranktextEl.classList.contains("new")) || (!args.newRank && ranktextEl.classList.contains("new")))
+              ranktextEl.classList.toggle("new");
+            document.getElementById("rankName").innerHTML = localStorage.getItem("rankName");
+            var averageEl = document.getElementById("average");
+            var lastScores = localStorage.getItem("lastScores").split(",");
+            var average = lastScores.reduce(function(a, b) { return parseInt(a) + parseInt(b); }) / lastScores.length;
+            averageEl.getElementsByTagName("span")[0].innerHTML = average;
+
+            document.getElementById("splash").style.display = "block";
+          }
+        });
+
         // Install prompt
         const INSTALL_URL = "http://helicopterapp.geeksbynature.dk/manifest.webapp";
         if (navigator.mozApps) {
@@ -72,10 +181,13 @@
               }, false);
               document.getElementById("play").addEventListener(stopEvent, function Play_onclick() {
                 p.style.display = "none";
+                game.startGame();
               }, false);
             }
           };
         }
+        // Splash screen
+
       }, false);
     </script>
   </head>
@@ -86,6 +198,26 @@
         <li id="install">Install</li>
         <li id="play">Play</li>
       </ul>
+    </div>
+    <div id="splash">
+      <div id="rank"></div>
+      <div id="highscore">
+        <div id="congratulation">
+          Congratulations! You set a new highscore: <span>N/A</span>
+        </div>
+        <div id="consolidation">
+          You can do better than that!
+        </div>
+      </div>
+      <div id="rankText">
+        <span id="statusquo">Your current rank is</span>
+        <span id="promotion">You've been promoted to</span>
+        <span id="rankName">N/A</span>
+      </div>
+      <div id="average">
+        Your recent average is <span>N/A</span>
+      </div>
+      <div id="start">Start Game</div>
     </div>
   </body>
 </html>
