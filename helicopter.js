@@ -145,21 +145,52 @@ Helicopter.prototype = {
   },
   initBackground: function H_initBackground() {
     this.mapData = [];
-    var blocksize = 1;
     this.bgctx.fillStyle = "white";
     this.bgctx.fillRect(0, 0, this.width, this.height);
     this.bgctx.fillStyle = "black";
-    for (var x = 0; x < this.width; x += blocksize) {
+    for (var x = 0; x < this.width; x++) {
       this.mapData[x] = [this.height/5, 4*this.height/5];
-      this.bgctx.fillRect(x, 0, blocksize, this.height/5);
-      this.bgctx.fillRect(x, 4*this.height/5, blocksize, this.height/5);
+      this.bgctx.fillRect(x, 0, 1, this.height/5);
+      this.bgctx.fillRect(x, 4*this.height/5, 1, this.height/5);
     }
+  },
+  countDown: function H_countDown(callback) {
+    if (typeof callback == "function") {
+      this.countdownCallback = callback;
+      this.countdownTimer = 40*3;
+    }
+    if (this.countdownTimer == 0) {
+      delete this.countdownTimer;
+      this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
+      if (this.countdownCallback) {
+        this.countdownCallback();
+        delete this.countdownCallback;
+      }
+    } else {
+    
+      this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
+      this.drawPlayer();
+      this.drawScore();
+      this.ctx.textAlign = "center";
+      this.ctx.textBaseline = "middle";
+      this.ctx.fillStyle = "black";
+      var x = this.width / 2;
+      var y = this.height / 2;
+      var cnt = ~~(--this.countdownTimer/40)+1;
+      this.ctx.font = ((40*cnt-this.countdownTimer)*5)+"px Droid Sans, sans-serif";
+      this.ctx.fillText(cnt, x, y);
+      this.runId = window.requestAnimationFrame(this.countDown.bind(this));
+    }
+
   },
   startGame: function H_startGame() {
     if (this.onStart)
       this.onStart();
     this.init();
-    this.main();
+
+    this.countDown(this.main);
+
+    //this.main();
   },
   stopGame: function H_stopGame() {
     var score = this.roofCollisionPosition ?

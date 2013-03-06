@@ -152,7 +152,7 @@
               ranktextEl.classList.toggle("new");
             document.getElementById("rankName").innerHTML = localStorage.getItem("rankName");
             var averageEl = document.getElementById("average");
-            var lastScores = localStorage.getItem("lastScores").split(",");
+            var lastScores = (localStorage.getItem("lastScores") || "").split(",");
             var average = (lastScores.reduce(function(a, b) { return parseInt(a) + parseInt(b); }) / lastScores.length).toFixed(1);
             averageEl.getElementsByTagName("span")[0].innerHTML = average;
 
