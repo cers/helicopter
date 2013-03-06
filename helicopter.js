@@ -167,7 +167,6 @@ Helicopter.prototype = {
         delete this.countdownCallback;
       }
     } else {
-    
       this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
       this.drawPlayer();
       this.drawScore();
@@ -187,10 +186,7 @@ Helicopter.prototype = {
     if (this.onStart)
       this.onStart();
     this.init();
-
     this.countDown(this.main);
-
-    //this.main();
   },
   stopGame: function H_stopGame() {
     var score = this.roofCollisionPosition ?
