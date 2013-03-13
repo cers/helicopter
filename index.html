@@ -5,6 +5,15 @@
     <meta charset="utf-8">
     <link rel="icon" type="image/png" href="icon.png">
     <style>
+      body {
+        -webkit-transform-origin: 0 0;
+        -moz-transform-origin: 0 0;
+        -ms-transform-origin: 0 0;
+        -o-transform-origin: 0 0;
+        transform-origin: 0 0;
+        height: 320px;
+        width: 480px;
+      }
       html, body, canvas, div {
         margin: 0;
         padding: 0;
@@ -195,6 +204,19 @@
           p.style.display = "none";
           game.startGame();
         }, false);
+        // resize area to fit screen
+        var width = window.innerWidth,
+            height = window.innerHeight;
+        var wRatio = width/480,
+            hRatio = height/320;
+        var ratio = Math.min(wRatio, hRatio);
+        if (ratio > 1) {
+          document.body.style.webkitTransform = "scale("+ratio+")";
+          document.body.style.MozTransform = "scale("+ratio+")";
+          document.body.style.OTransform = "scale("+ratio+")";
+          document.body.style.msTransform = "scale("+ratio+")";
+          document.body.style.transform = "scale("+ratio+")";
+        }
       }, false);
     </script>
   </head>
