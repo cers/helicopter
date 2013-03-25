@@ -147,6 +147,7 @@ Helicopter.prototype = {
   },
   initBackground: function H_initBackground() {
     this.mapData = [];
+    this.mapDataPos = 0;
     this.bgctx.fillStyle = "white";
     this.bgctx.fillRect(0, 0, this.width, this.height);
     this.bgctx.fillStyle = "black";
@@ -248,8 +249,6 @@ Helicopter.prototype = {
     this.ctx.fillStyle = "black";
     this.ctx.fillRect(this.width - this.step, 20, this.step, this.height - 20);
     this.ctx.fillStyle = "white";
-    if (this.mapDataTail - this.mapDataPos < this.width + 1)
-      this.genNextMapFragment();
     this.ctx.beginPath();
     for (var x = 0; x <= this.step; x += blocksize) {
       this.ctx.lineTo(x + this.width - this.step, this.mapData[x + this.mapDataPos + this.width - this.step][0]);
@@ -273,6 +272,8 @@ Helicopter.prototype = {
     }
     this.bgctx.drawImage(this.canvas, 0, 0, this.width, this.height);
     this.mapDataPos += this.step;
+    if (this.mapDataTail - this.mapDataPos < this.width + 1)
+      this.genNextMapFragment();
   },
   drawPlayer: function H_drawPlayer() {
     if (this.roofCollision) {
