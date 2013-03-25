@@ -73,6 +73,8 @@ Helicopter.prototype = {
   fps: [],
   settings: {},
   mapData: [],
+  mapDataPos: 0,
+  mapDataTail: 0,
   highscore: 0,
   scorecanvas: null,
   scorectx: null,
@@ -141,7 +143,7 @@ Helicopter.prototype = {
     this.deathArgs = {newHighscore: false, newRank: false};
   },
   difficulty: function H_difficulty() {
-    return Math.max(100, 4*this.height/5-this.offset/200-65);
+    return Math.max(100, 4 * this.height / 5 - this.offset / 200 - 65);
   },
   initBackground: function H_initBackground() {
     this.mapData = [];
@@ -149,15 +151,17 @@ Helicopter.prototype = {
     this.bgctx.fillRect(0, 0, this.width, this.height);
     this.bgctx.fillStyle = "black";
     for (var x = 0; x < this.width; x++) {
-      this.mapData[x] = [this.height/5, 4*this.height/5];
-      this.bgctx.fillRect(x, 0, 1, this.height/5);
-      this.bgctx.fillRect(x, 4*this.height/5, 1, this.height/5);
+      this.mapData[x] = [this.height / 5, 4 * this.height / 5];
+      this.bgctx.fillRect(x, 0, 1, this.height / 5);
+      this.bgctx.fillRect(x, 4 * this.height / 5, 1, this.height / 5);
     }
+    this.mapDataTail = x - 1;
+    this.genNextMapFragment();
   },
   countDown: function H_countDown(callback) {
     if (typeof callback == "function") {
       this.countdownCallback = callback;
-      this.countdownTimer = 40*3;
+      this.countdownTimer = 40 * 3;
     }
     if (this.countdownTimer == 0) {
       delete this.countdownTimer;
@@ -175,8 +179,8 @@ Helicopter.prototype = {
       this.ctx.fillStyle = "black";
       var x = this.width / 2;
       var y = this.height / 2;
-      var cnt = ~~(--this.countdownTimer/40)+1;
-      this.ctx.font = ((40*cnt-this.countdownTimer)*5)+"px Droid Sans, sans-serif";
+      var cnt = ~~(--this.countdownTimer / 40) + 1;
+      this.ctx.font = ((40 * cnt - this.countdownTimer) * 5)+"px Droid Sans, sans-serif";
       this.ctx.fillText(cnt, x, y);
       this.runId = window.requestAnimationFrame(this.countDown.bind(this));
     }
@@ -221,37 +225,37 @@ Helicopter.prototype = {
     this.drawScore(true);
   },
   genNextMapFragment: function H_genMapFragment() {
-    var fragmentSize = (2<<6)+1;
-    var last = this.mapData.length-1;
-    var tmp = Array(fragmentSize);
-    tmp[0] = this.mapData[last];
+    var fragmentSize = 2<<6+1;
+    for (var i = 0; i <= this.mapDataTail - this.mapDataPos; i++) {
+      this.mapData[i] = this.mapData[i + this.mapDataPos];
+    }
+    this.mapDataTail -= this.mapDataPos;
+    this.mapDataPos = 0;
     var difficulty = this.difficulty();
-    var random = Math.floor(20+(this.height-this.difficulty()-40)*Math.random());
-    tmp[fragmentSize-1] = [random, random+difficulty];
-    for (var i = (fragmentSize-1)/2; i >= 1; i = i/2) {
-      for (var o = i; o < fragmentSize-1; o += 2*i) {
-        var val = Math.floor((tmp[o-i][0]+tmp[o+i][0])/2+(Math.random()*i-i/2));
-        tmp[o] = [val, val+difficulty];
+    var random = Math.floor(20 + (this.height - difficulty - 40) * Math.random());
+    this.mapData[this.mapDataTail + fragmentSize] = [random, random + difficulty];
+    for (var i = fragmentSize / 2; i >= 1; i = i / 2) {
+      for (var o = i; o < fragmentSize; o += 2 * i) {
+        var val = Math.floor((this.mapData[this.mapDataTail + o - i][0] + this.mapData[this.mapDataTail + o + i][0]) / 2 + (Math.random() * i - i / 2));
+        this.mapData[o + this.mapDataTail] = [val, val + difficulty];
       }
     }
-    this.mapData = this.mapData.concat(tmp.splice(0));
+    this.mapDataTail += fragmentSize;
   },
   drawCourse: function H_drawCourse() {
     var blocksize = 1;
     this.ctx.drawImage(this.bgcanvas, -this.step, 0, this.width, this.height);
     this.ctx.fillStyle = "black";
-    this.ctx.fillRect(this.width-this.step, 20, this.step, this.height-20);
+    this.ctx.fillRect(this.width - this.step, 20, this.step, this.height - 20);
     this.ctx.fillStyle = "white";
-
-    this.mapData.splice(0, this.step);
-    if (this.mapData.length < this.width+1)
+    if (this.mapDataTail - this.mapDataPos < this.width + 1)
       this.genNextMapFragment();
     this.ctx.beginPath();
-    for (var x = this.width-this.step-1; x <= this.width; x += blocksize) {
-      this.ctx.lineTo(x, this.mapData[x][0]);
+    for (var x = 0; x <= this.step; x += blocksize) {
+      this.ctx.lineTo(x + this.width - this.step, this.mapData[x + this.mapDataPos + this.width - this.step][0]);
     }
-    for (var x = this.width; x >= this.width-this.step-1; x -= blocksize) {
-      this.ctx.lineTo(x, this.mapData[x][1]);
+    for (var x = this.step; x >= 0; x -= blocksize) {
+      this.ctx.lineTo(this.width - this.step + x, this.mapData[x + this.mapDataPos + this.width - this.step][1]);
     }
     this.ctx.fill();
     if (this.highscore > 0) {
@@ -268,6 +272,7 @@ Helicopter.prototype = {
       }
     }
     this.bgctx.drawImage(this.canvas, 0, 0, this.width, this.height);
+    this.mapDataPos += this.step;
   },
   drawPlayer: function H_drawPlayer() {
     if (this.roofCollision) {
@@ -293,7 +298,7 @@ Helicopter.prototype = {
       this.scorectx.textAlign = "left";
       this.scorectx.fillText("Distance: " + score, 10, 20);
       this.scorectx.textAlign = "right";
-      this.scorectx.fillText("Highscore: " + this.highscore, this.width-10, 20);
+      this.scorectx.fillText("Highscore: " + this.highscore, this.width - 10, 20);
     }
     this.ctx.drawImage(this.scorecanvas, 0, 0, this.width, this.scorecanvas.height);
   },
@@ -301,13 +306,13 @@ Helicopter.prototype = {
     this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
     this.drawPlayer();
     this.drawScore(true);
-    if (this.fireballCnt < this.fireball.length*2) {
+    if (this.fireballCnt < this.fireball.length * 2) {
       // make smoke rise
       for (var i=0; i<this.posCache.length; i++) {
         this.posCache[i] -= 4;
       }
       this.drawSmoke(true);
-      var img = this.fireball[Math.floor(this.fireballCnt++/2)];
+      var img = this.fireball[Math.floor(this.fireballCnt++ / 2)];
       this.ctx.drawImage(img, this.playerX, this.playerY-50, img.width, img.height);
       this.runId = window.requestAnimationFrame(this.drawExplosion.bind(this));
     } else {
@@ -318,9 +323,9 @@ Helicopter.prototype = {
   },
   clearSmoke: function H_clearSmoke() {
     this.bgctx.fillStyle = "white";
-    var offset = (this.offset-this.step)%(this.step*4);
-    for (var i=0; i<this.posCache.length; i++) {
-      this.bgctx.fillRect(this.playerX-this.step*4*i-offset, this.posCache[i], this.smoke.width, this.smoke.height);
+    var offset = (this.offset - this.step) % (this.step * 4);
+    for (var i = 0; i < this.posCache.length; i++) {
+      this.bgctx.fillRect(this.playerX - this.step * 4 * i - offset, this.posCache[i], this.smoke.width, this.smoke.height);
     }
     this.ctx.drawImage(this.bgcanvas, 0, 0, this.width, this.height);
     this.drawPlayer();
@@ -329,7 +334,7 @@ Helicopter.prototype = {
   main: function H_main() {
     if (this.settings.fps) {
       var now = Date.now();
-      this.fps = Math.floor(1000/(now-this.lastDraw));
+      this.fps = Math.floor(1000 / (now - this.lastDraw));
       this.lastDraw = now;
     }
 
@@ -345,7 +350,7 @@ Helicopter.prototype = {
       this.drawFps();
 
     // only update posCache periodically
-    if (this.offset%(this.step*4) == 0) {
+    if (this.offset % (this.step * 4) == 0) {
       this.drawSmoke();
       this.posCache.pop();
       this.posCache.unshift(this.playerY);
@@ -354,17 +359,17 @@ Helicopter.prototype = {
     this.offset += this.step;
 
     this.playerAcc += 0.2;
-    this.mouseDownCnt = Math.max(0, this.mouseDownCnt-1);
+    this.mouseDownCnt = Math.max(0, this.mouseDownCnt - 1);
     if (this.mouseDown && !this.roofCollision) {
       this.playerAcc -= 0.4;
-      this.mouseDownCnt = Math.min(18, this.mouseDownCnt+2);
+      this.mouseDownCnt = Math.min(18, this.mouseDownCnt + 2);
     }
 
     this.playerY += this.playerAcc;
 
-    var colPoints = this.mapData[this.playerX+25];
+    var colPoints = this.mapData[this.mapDataPos + this.playerX + 25];
 
-    if (this.playerY < colPoints[0]-5) {
+    if (this.playerY < colPoints[0] - 5) {
       if (!this.roofCollision) {
         this.roofCollision = true;
         this.roofCollisionPosition = this.offset;
@@ -372,7 +377,7 @@ Helicopter.prototype = {
       this.playerAcc = Math.max(0, this.playerAcc);
       this.playerY = colPoints[0];
     }
-    if (this.playerY > colPoints[1]-20) {
+    if (this.playerY > colPoints[1] - 20) {
       this.roofCollision = false;
       // COLLISION!
       this.clearSmoke();
@@ -404,5 +409,6 @@ Helicopter.prototype = {
     this.ctx = this.canvas.getContext("2d");
     this.bgctx = this.bgcanvas.getContext("2d");
     this.scorectx = this.scorecanvas.getContext("2d");
+    this.mapData = new Array(w*2);
   }
 }
