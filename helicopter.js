@@ -263,8 +263,8 @@ Helicopter.prototype = {
         var hsPos = this.width - this.step / 2;
         this.ctx.strokeStyle = "red";
         this.ctx.beginPath();
-        this.ctx.moveTo(hsPos, this.mapData[hsPos][0]);
-        this.ctx.lineTo(hsPos, this.mapData[hsPos][1]);
+        this.ctx.moveTo(hsPos, this.mapData[this.mapDataPos + hsPos][0]);
+        this.ctx.lineTo(hsPos, this.mapData[this.mapDataPos + hsPos][1]);
         this.ctx.closePath();
         this.ctx.stroke();
         this.ctx.strokeStyle = "black";
