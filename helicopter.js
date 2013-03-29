@@ -1,3 +1,24 @@
+function resourceLoader(owner) {
+  this.owner = owner;
+  this.rCount = 0;
+}
+
+resourceLoader.prototype = {
+  addImage: function(path) {
+    this.rCount++;
+    var img = new Image();
+    img.src = path;
+    img.onload = this.onLoad.bind(this);
+    return img;
+  },
+  onLoad: function() {
+    if (--this.rCount == 0) {
+      this.owner.init();
+      this.owner.onLoad();
+    }
+  }
+}
+
 function Helicopter(e, settings) {
   if (!settings)
     settings = {};
@@ -8,32 +29,20 @@ function Helicopter(e, settings) {
   this.ctx.font = this.scorectx.font = "18px sans-serif";
   this.ctx.strokeStyle = "black";
 
+  this.resourceLoader = new resourceLoader(this);
+
   for (var i=12, idx=0; i<31; i++) {
-    var img = new Image();
-    img.src = "data/small-"+i+".png";
-    img.height = 25;
-    img.width = 52;
-    this.helicopter[idx++] = img;
+    this.helicopter[idx++] = this.resourceLoader.addImage("data/small-"+i+".png");
   }
 
-  this.smoke = new Image();
-  this.smoke.src = "data/small-smoke-01.png";
-  this.smoke.height = this.smoke.width = 15;
+  this.smoke = this.resourceLoader.addImage("data/small-smoke-01.png");
 
   for (var i=0; i<17; i++) {
-    var img = new Image();
-    img.src = "data/fireball-"+i+".png";
-    img.height = 100;
-    img.width = 71;
-    this.fireball[i] = img;
+    this.fireball[i] = this.resourceLoader.addImage("data/fireball-"+i+".png");
   }
 
   for (var i=0; i<6; i++) {
-    var img = new Image();
-    img.src = "data/crash-0"+i+".png";
-    img.height = 25;
-    img.width = 52;
-    this.crash[i] = img;
+    this.crash[i] = this.resourceLoader.addImage("data/crash-0"+i+".png");
   }
 
   this.highscore = localStorage.getItem("highscore") || 0;
@@ -45,12 +54,10 @@ function Helicopter(e, settings) {
     this.onStart = settings.onStart;
   if (settings.onDeath)
     this.onDeath = settings.onDeath;
+  if (settings.onLoad)
+    this.onLoad = settings.onLoad;
 
   this.setupHandlers();
-  this.init();
-
-  this.drawPlayer();
-  this.drawScore();
 }
 
 Helicopter.prototype = {
@@ -87,6 +94,7 @@ Helicopter.prototype = {
   fireballCnt: 0,
   onStart: null,
   onDeath: null,
+  onLoad: null,
   deathArgs: null,
   ranks: [
     "Airman",
@@ -125,6 +133,7 @@ Helicopter.prototype = {
     if (this.startButton)
       this.startButton.addEventListener(stopEvent, this.startGame.bind(this), false);
   },
+  resourceLoader: null,
   init: function H_init() {
     this.playerX = this.width/5;
     this.playerY = this.height/2;
@@ -141,6 +150,8 @@ Helicopter.prototype = {
     this.roofCollision = false;
     this.roofCollisionPosition = 0;
     this.deathArgs = {newHighscore: false, newRank: false};
+    this.drawPlayer();
+    this.drawScore();
   },
   difficulty: function H_difficulty() {
     return Math.max(100, 4 * this.height / 5 - this.offset / 200 - 65);

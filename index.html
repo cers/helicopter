@@ -133,6 +133,27 @@
         height: 50px;
         line-height: 1em;
       }
+
+      #loader {
+        z-index: 3;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        padding: 0;
+        width: 480px;
+        height: 320px;
+        background: black;
+        color: white;
+      }
+      #loader p {
+        margin: 0;
+        padding: 0;
+        font-size: 4em;
+        text-align: center;
+        line-height: 320px;
+        vertical-align: middle;
+      }
     </style>
     <script src="requestAnimationFrameShim.js"></script>
     <script src="helicopter.js"></script>
@@ -166,6 +187,10 @@
             averageEl.getElementsByTagName("span")[0].innerHTML = average;
 
             document.getElementById("splash").style.display = "block";
+          },
+          onLoad: function() {
+            var loaderEl = document.getElementById("loader");
+            loaderEl.style.display = "none";
           }
         });
 
@@ -247,6 +272,9 @@
         Your recent average is <span>N/A</span>
       </div>
       <div id="start">Start Game</div>
+    </div>
+    <div id="loader">
+        <p>Loading</p>
     </div>
   </body>
 </html>
