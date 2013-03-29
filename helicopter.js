@@ -31,18 +31,23 @@ function Helicopter(e, settings) {
 
   this.resourceLoader = new resourceLoader(this);
 
-  for (var i=12, idx=0; i<31; i++) {
-    this.helicopter[idx++] = this.resourceLoader.addImage("data/small-"+i+".png");
+  for (var i = 12, idx = 0; i < 31; i++) {
+    this.helicopter[idx++] = this.resourceLoader.addImage("data/small-" + i + ".png");
   }
 
   this.smoke = this.resourceLoader.addImage("data/small-smoke-01.png");
 
-  for (var i=0; i<17; i++) {
-    this.fireball[i] = this.resourceLoader.addImage("data/fireball-"+i+".png");
+  for (var i = 0; i < 17; i++) {
+    this.fireball[i] = this.resourceLoader.addImage("data/fireball-" + i + ".png");
   }
 
-  for (var i=0; i<6; i++) {
-    this.crash[i] = this.resourceLoader.addImage("data/crash-0"+i+".png");
+  for (var i = 0; i < 6; i++) {
+    this.crash[i] = this.resourceLoader.addImage("data/crash-0" + i + ".png");
+  }
+
+  //preload ensignia
+  for (var i = 0; i < 13; i++) {
+    this.resourceLoader.addImage("data/ensignia-" + ((new Array(3 - rank.toString().length)).join('0') + rank) + ".png");
   }
 
   this.highscore = localStorage.getItem("highscore") || 0;
