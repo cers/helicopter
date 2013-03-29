@@ -47,7 +47,8 @@ function Helicopter(e, settings) {
 
   //preload ensignia
   for (var i = 0; i < 13; i++) {
-    this.resourceLoader.addImage("data/ensignia-" + ((new Array(3 - rank.toString().length)).join('0') + rank) + ".png");
+    var pad = (i > 9) ? "" : "0";
+    this.resourceLoader.addImage("data/ensignia-" + pad + i + ".png");
   }
 
   this.highscore = localStorage.getItem("highscore") || 0;
